@@ -84,7 +84,6 @@ mkdir -pv ${SYSDIR}
 mkdir -pv ${SYSDIR}/downloads
 mkdir -pv ${SYSDIR}/build
 install -dv ${SYSDIR}/cross-tools
-install -dv ${SYSDIR}
 ```
 
 　　简单说明一下这几个目录的用处：
