@@ -1761,19 +1761,19 @@ EOF
 ### 创建系统信息文件
 ```
 cat > ${SYSDIR}/etc/lsb-release << "EOF"
-DISTRIB_ID="My GNU/Linux System for LoongArch64"
+DISTRIB_ID="CLFS for LoongArch64"
 DISTRIB_RELEASE="1.0"
-DISTRIB_CODENAME="Sun Haiyong"
-DISTRIB_DESCRIPTION="My GNU/Linux System"
+DISTRIB_CODENAME="Yanqi's build"
+DISTRIB_DESCRIPTION="derived from Sun Haiyong's CLFS for LoongArch64"
 EOF
 ```
 ```
 cat > ${SYSDIR}/etc/os-release << "EOF"
-NAME="My GNU/Linux System for LoongArch64"
+NAME="CLFS for LoongArch64"
 VERSION="1.0"
 ID=CLFS4LA64
-PRETTY_NAME="My GNU/Linux System for LoongArch64 1.0"
-VERSION_CODENAME="Sun Haiyong"
+PRETTY_NAME="CLFS for LoongArch64 1.0"
+VERSION_CODENAME="Yanqi's build"
 EOF
 ```
 
