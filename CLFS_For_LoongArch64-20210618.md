@@ -84,7 +84,7 @@ mkdir -pv ${SYSDIR}
 mkdir -pv ${SYSDIR}/downloads
 mkdir -pv ${SYSDIR}/build
 install -dv ${SYSDIR}/cross-tools
-install -dv ${SYSDIR}/sysroot
+install -dv ${SYSDIR}
 ```
 
 　　简单说明一下这几个目录的用处：
@@ -97,7 +97,6 @@ install -dv ${SYSDIR}/sysroot
 
 * “cross-tools”目录用来存放交叉工具链及相关的软件；
 
-* “sysroot”用来存放目标平台系统。
 
 #### 创建制作用户
 
@@ -111,7 +110,7 @@ useradd -s /bin/bash -g lauser -m -k /dev/null lauser
 
 ```
 chown -Rv lauser ${SYSDIR}
-chmod -v a+wt ${SYSDIR}/{sysroot,cross-tools,downloads,build}
+chmod -v a+wt ${SYSDIR}/{cross-tools,downloads,build}
 ```
 
 
@@ -180,7 +179,7 @@ source ~/.bash_profile
 　　我们要制作的目标系统是常规的Linux/GNU系统，我们按照常规的Linux/GNU系统所使用的目录结构创建目标系统的目录，命令如下:
 
 ```
-pushd ${SYSDIR}/sysroot
+pushd ${SYSDIR}
 	mkdir -pv ./{boot,home,root,mnt,opt,srv,run}
 	mkdir -pv ./etc/{opt,sysconfig}
 	mkdir -pv ./media/{floppy,cdrom}
@@ -200,7 +199,7 @@ pushd ${SYSDIR}/sysroot
 	install -dv -m 1777 ./tmp ./var/tmp
 popd
 ```
-　　目标系统将存放在${SYSDIR}/sysroot目录中，所以以该目录为基础创建各种目录和链接文件。
+　　目标系统将存放在 ${SYSDIR} 目录中，所以以该目录为基础创建各种目录和链接文件。
 
 ### 2.3 下载软件包
 
@@ -331,8 +330,8 @@ pushd ${BUILDDIR}/linux-5.13.0
 	make mrproper
 	make ARCH=loongarch INSTALL_HDR_PATH=dest headers_install
 	find dest/include -name '.*' -delete
-	mkdir -pv ${SYSDIR}/sysroot/usr/include
-	cp -rv dest/include/* ${SYSDIR}/sysroot/usr/include
+	mkdir -pv ${SYSDIR}/usr/include
+	cp -rv dest/include/* ${SYSDIR}/usr/include
 popd
 ```
 
@@ -356,12 +355,12 @@ pushd ${BUILDDIR}/binutils-2.31
 	cd build
 	CC=gcc AR=ar AS=as \
 	../configure --prefix=${SYSDIR}/cross-tools --build=${CROSS_HOST} --host=${CROSS_HOST} \
-	             --target=${CROSS_TARGET} --with-sysroot=${SYSDIR}/sysroot --disable-nls \
+	             --target=${CROSS_TARGET} --with-sysroot=${SYSDIR} --disable-nls \
 	             --disable-static --disable-werror --enable-64-bit-bfd
 	make configure-host
 	make 
 	make install
-	cp -v ../include/libiberty.h ${SYSDIR}/sysroot/usr/include
+	cp -v ../include/libiberty.h ${SYSDIR}/usr/include
 popd
 ```
 
@@ -423,7 +422,7 @@ pushd ${BUILDDIR}/gcc-8.3.0
 		             --target=${CROSS_TARGET} --disable-nls \
 		             --with-mpfr=${SYSDIR}/cross-tools --with-gmp=${SYSDIR}/cross-tools \
 		             --with-mpc=${SYSDIR}/cross-tools \
-		             --with-newlib --disable-shared --with-sysroot=${SYSDIR}/sysroot \
+		             --with-newlib --disable-shared --with-sysroot=${SYSDIR} \
 		             --disable-decimal-float --disable-libgomp --disable-libitm \
 		             --disable-libsanitizer --disable-libquadmath --disable-threads \
 		             --disable-target-zlib \
@@ -468,10 +467,10 @@ popd
 		../configure --prefix=/usr --host=${CROSS_TARGET} --build=${CROSS_HOST} \
 		             --libdir=/usr/lib64 --libexecdir=/usr/lib64/glibc --enable-add-ons \
 		             --with-tls --with-binutils=${SYSDIR}/cross-tools/bin \
-		             --with-headers=${SYSDIR}/sysroot/usr/include \
+		             --with-headers=${SYSDIR}/usr/include \
 		             --enable-obsolete-rpc --disable-werror
 			make
-			make DESTDIR=${SYSDIR}/sysroot install
+			make DESTDIR=${SYSDIR} install
 		popd
 	popd
 ```
@@ -489,7 +488,7 @@ pushd ${BUILDDIR}/gcc-8.3.0
 		AR=ar LDFLAGS="-Wl,-rpath,${SYSDIR}/cross-tools/lib" \
 		../configure --prefix=${SYSDIR}/cross-tools --build=${CROSS_HOST} \
 		             --host=${CROSS_HOST} --target=${CROSS_TARGET} \
-		             --with-sysroot=${SYSDIR}/sysroot --with-mpfr=${SYSDIR}/cross-tools \
+		             --with-sysroot=${SYSDIR} --with-mpfr=${SYSDIR}/cross-tools \
 		             --with-gmp=${SYSDIR}/cross-tools --with-mpc=${SYSDIR}/cross-tools \
 		             --enable-__cxa_atexit --enable-threads=posix --with-system-zlib \
 		             --enable-libstdcxx-time --enable-checking=release \
@@ -540,7 +539,7 @@ popd
 tar xvf ${DOWNLOADDIR}/pkg-config-0.29.2.tar.gz -C ${BUILDDIR}/
 pushd ${BUILDDIR}/pkg-config-0.29.2
 	./configure --prefix=${SYSDIR}/cross-tools \
-	            --with-pc_path=${SYSDIR}/sysroot/usr/lib64/pkgconfig:${SYSDIR}/sysroot/usr/share/pkgconfig \
+	            --with-pc_path=${SYSDIR}/usr/lib64/pkgconfig:${SYSDIR}/usr/share/pkgconfig \
 	            --program-prefix=${CROSS_TARGET}- --with-internal-glib --disable-host-tool
 	make
 	make install
@@ -634,10 +633,10 @@ automake --add-missing
 　　2.直接替换文件，具体的操作方式为：
 
 ```
-cp ${SYSDIR}/sysroot/usr/share/automake-1.16/config.* config/
+cp ${SYSDIR}/usr/share/automake-1.16/config.* config/
 ```
 
-　　如果使用automake命令无法解决，可以直接复制Automake软件包安装的脚本文件，以我们安装的Automake-1.16版本为例，从${SYSDIR}/sysroot/usr/share/automake-1.16/中复制config开头的文件覆盖当前要编译的软件包中的同名文件即可，这里假定需要覆盖的文件在config目录中，也可能是在其它目录，可根据需要进行覆盖。
+　　如果使用automake命令无法解决，可以直接复制Automake软件包安装的脚本文件，以我们安装的Automake-1.16版本为例，从${SYSDIR}/usr/share/automake-1.16/中复制config开头的文件覆盖当前要编译的软件包中的同名文件即可，这里假定需要覆盖的文件在config目录中，也可能是在其它目录，可根据需要进行覆盖。
 
 　　也可能一个软件包中有多个探测脚本，那么就需要全部进行覆盖。
 　　
@@ -671,7 +670,7 @@ EOF
 ```
 tar xvf ${DOWNLOADDIR}/man-pages-5.11.tar.xz -C ${BUILDDIR}
 pushd ${BUILDDIR}/man-pages-5.11
-	make DESTDIR=${SYSDIR}/sysroot install
+	make DESTDIR=${SYSDIR} install
 popd
 ```
 　　Man-Pages软件包没有配置阶段，直接安装到目标系统的目录中即可。
@@ -680,7 +679,7 @@ popd
 ```
 tar xvf ${DOWNLOADDIR}/iana-etc-20210407.tar.gz -C ${BUILDDIR}
 pushd ${BUILDDIR}/iana-etc-20210407
-	cp services protocols ${SYSDIR}/sysroot/etc
+	cp services protocols ${SYSDIR}/etc
 popd
 ```
 　　Iana-Etc软件包无需配置编译，只要将包含的文件复制到目标系统的目录中即可。
@@ -694,8 +693,8 @@ pushd ${BUILDDIR}/gmp-6.2.1
 	./configure --build=${CROSS_HOST} --host=${CROSS_TARGET} \
                 --prefix=/usr --libdir=/usr/lib64 --enable-cxx
 	make 
-	make DESTDIR=${SYSDIR}/sysroot install
-	rm -v ${SYSDIR}/sysroot/usr/lib64/lib{gmp,gmpxx}.la
+	make DESTDIR=${SYSDIR} install
+	rm -v ${SYSDIR}/usr/lib64/lib{gmp,gmpxx}.la
 popd
 ```
 　　GMP软件包自带的探测架构脚本不支持LoongArch，因此删除探测脚本并用automake命令重新安装探测脚本。
@@ -706,8 +705,8 @@ tar xvf ${DOWNLOADDIR}/mpfr-4.1.0.tar.xz -C ${BUILDDIR}
 pushd ${BUILDDIR}/mpfr-4.1.0
 	./configure --build=${CROSS_HOST} --host=${CROSS_TARGET} --prefix=/usr --libdir=/usr/lib64
 	make
-	make DESTDIR=${SYSDIR}/sysroot install
-	rm -v ${SYSDIR}/sysroot/usr/lib64/libmpfr.la
+	make DESTDIR=${SYSDIR} install
+	rm -v ${SYSDIR}/usr/lib64/libmpfr.la
 popd
 ```
 
@@ -719,8 +718,8 @@ pushd ${BUILDDIR}/mpc-1.2.1
 	automake --add-missing
 	./configure --build=${CROSS_HOST} --host=${CROSS_TARGET} --prefix=/usr --libdir=/usr/lib64
 	make
-	make DESTDIR=${SYSDIR}/sysroot install
-	rm -v ${SYSDIR}/sysroot/usr/lib64/libmpc.la
+	make DESTDIR=${SYSDIR} install
+	rm -v ${SYSDIR}/usr/lib64/libmpc.la
 popd
 ```
 
@@ -730,7 +729,7 @@ tar xvf ${DOWNLOADDIR}/zlib-1.2.11.tar.xz -C ${BUILDDIR}
 pushd ${BUILDDIR}/zlib-1.2.11
 	CC="${CROSS_TARGET}-gcc" ./configure --prefix=/usr --libdir=/usr/lib64
 	make
-	make DESTDIR=${SYSDIR}/sysroot install
+	make DESTDIR=${SYSDIR} install
 popd
 ```
 
@@ -747,7 +746,7 @@ pushd ${BUILDDIR}/binutils-2.31
 		             --host=${CROSS_TARGET} --enable-shared --disable-werror \
 		             --with-system-zlib --enable-64-bit-bfd
 		make tooldir=/usr
-		make DESTDIR=${SYSDIR}/sysroot tooldir=/usr install
+		make DESTDIR=${SYSDIR} tooldir=/usr install
 	popd
 popd
 ```
@@ -769,9 +768,9 @@ pushd ${BUILDDIR}/gcc-8.3.0
 		             --with-abi=lp64 --with-arch=loongarch \
 		             --enable-languages=c,c++,fortran,objc,obj-c++,lto
 		make
-		make DESTDIR=${SYSDIR}/sysroot install
-		ln -sv /usr/bin/cpp ${SYSDIR}/sysroot/lib
-		ln -sv gcc ${SYSDIR}/sysroot/usr/bin/cc
+		make DESTDIR=${SYSDIR} install
+		ln -sv /usr/bin/cpp ${SYSDIR}/lib
+		ln -sv gcc ${SYSDIR}/usr/bin/cc
 	popd
 popd
 ```
@@ -786,14 +785,14 @@ pushd ${BUILDDIR}/bzip2-1.0.8
 	make CC=${CROSS_TARGET}-gcc -f Makefile-libbz2_so
 	make clean
 	make CC=${CROSS_TARGET}-gcc
-	make PREFIX=${SYSDIR}/sysroot/usr install
-	cp -v bzip2-shared ${SYSDIR}/sysroot/bin/bzip2
-	cp -av libbz2.so* ${SYSDIR}/sysroot/lib64
-	ln -sfv ../../lib64/libbz2.so.1.0 ${SYSDIR}/sysroot/usr/lib64/libbz2.so
-	rm -v ${SYSDIR}/sysroot/usr/bin/{bunzip2,bzcat,bzip2}
-	ln -sfv bzip2 ${SYSDIR}/sysroot/bin/bunzip2
-	ln -sfv bzip2 ${SYSDIR}/sysroot/bin/bzcat
-	rm -fv ${SYSDIR}/sysroot/usr/lib/libbz2.a
+	make PREFIX=${SYSDIR}/usr install
+	cp -v bzip2-shared ${SYSDIR}/bin/bzip2
+	cp -av libbz2.so* ${SYSDIR}/lib64
+	ln -sfv ../../lib64/libbz2.so.1.0 ${SYSDIR}/usr/lib64/libbz2.so
+	rm -v ${SYSDIR}/usr/bin/{bunzip2,bzcat,bzip2}
+	ln -sfv bzip2 ${SYSDIR}/bin/bunzip2
+	ln -sfv bzip2 ${SYSDIR}/bin/bzcat
+	rm -fv ${SYSDIR}/usr/lib/libbz2.a
 popd
 ```
 
@@ -806,7 +805,7 @@ tar xvf ${DOWNLOADDIR}/xz-5.2.5.tar.xz -C ${BUILDDIR}
 pushd ${BUILDDIR}/xz-5.2.5
 	./configure --prefix=/usr --libdir=/usr/lib64 --build=${CROSS_HOST} --host=${CROSS_TARGET}
 	make
-	make DESTDIR=${SYSDIR}/sysroot install
+	make DESTDIR=${SYSDIR} install
 popd
 ```
 
@@ -815,7 +814,7 @@ popd
 tar xvf ${DOWNLOADDIR}/zstd-1.5.0.tar.gz -C ${BUILDDIR}
 pushd ${BUILDDIR}/zstd-1.5.0
 	make CC="${CROSS_TARGET}-gcc" PREFIX=/usr LIBDIR=/usr/lib64
-	make CC="${CROSS_TARGET}-gcc" PREFIX=/usr LIBDIR=/usr/lib64 DESTDIR=${SYSDIR}/sysroot install
+	make CC="${CROSS_TARGET}-gcc" PREFIX=/usr LIBDIR=/usr/lib64 DESTDIR=${SYSDIR} install
 popd
 ```
 
@@ -827,7 +826,7 @@ pushd ${BUILDDIR}/file-5.40
 	automake --add-missing
 	./configure --prefix=/usr  --libdir=/usr/lib64 --build=${CROSS_HOST} --host=${CROSS_TARGET}
 	make
-	make DESTDIR=${SYSDIR}/sysroot install
+	make DESTDIR=${SYSDIR} install
 popd
 ```
 
@@ -843,21 +842,21 @@ pushd ${BUILDDIR}/ncurses-6.2
 	            --with-pkg-config-libdir=/usr/lib64/pkgconfig --enable-widec \
 	            --disable-stripping
 	make
-	make DESTDIR=${SYSDIR}/sysroot install
+	make DESTDIR=${SYSDIR} install
 	
 	for lib in ncurses form panel menu ; do
-	    rm -vf                    ${SYSDIR}/sysroot/usr/lib64/lib${lib}.so
-	    echo "INPUT(-l${lib}w)" > ${SYSDIR}/sysroot/usr/lib64/lib${lib}.so
-	    ln -sfv ${lib}w.pc        ${SYSDIR}/sysroot/usr/lib64/pkgconfig/${lib}.pc
+	    rm -vf                    ${SYSDIR}/usr/lib64/lib${lib}.so
+	    echo "INPUT(-l${lib}w)" > ${SYSDIR}/usr/lib64/lib${lib}.so
+	    ln -sfv ${lib}w.pc        ${SYSDIR}/usr/lib64/pkgconfig/${lib}.pc
 	done
 	
-	rm -vf  ${SYSDIR}/sysroot/usr/lib64/libcursesw.so
-	echo "INPUT(-lncursesw)" > ${SYSDIR}/sysroot/usr/lib64/libcursesw.so
-	ln -sfv libncurses.so      ${SYSDIR}/sysroot/usr/lib64/libcurses.so
-	rm -fv ${SYSDIR}/sysroot/usr/lib64/libncurses++w.a
+	rm -vf  ${SYSDIR}/usr/lib64/libcursesw.so
+	echo "INPUT(-lncursesw)" > ${SYSDIR}/usr/lib64/libcursesw.so
+	ln -sfv libncurses.so      ${SYSDIR}/usr/lib64/libcurses.so
+	rm -fv ${SYSDIR}/usr/lib64/libncurses++w.a
 popd
 
-cp  ${SYSDIR}/sysroot/usr/bin/ncursesw6-config ${SYSDIR}/cross-tools/bin/
+cp  ${SYSDIR}/usr/bin/ncursesw6-config ${SYSDIR}/cross-tools/bin/
 sed -i "s@-L\$libdir@@g" ${SYSDIR}/cross-tools/bin/ncursesw6-config
 ```
 　　在安装完目标系统的Ncurses后，复制了一个ncursesw6-config脚本命令到交叉编译目录中，这是因为后续编译一些软件包时会调用该命令来获取安装到目标系统中的Nucrses库链接信息，而如果主系统中的库与目标系统中的库链接不一致可能导致链接失败，因此提供一个可以正确链接信息的脚本是有效的解决方案。
@@ -873,7 +872,7 @@ pushd ${BUILDDIR}/readline-8.1
 	./configure --prefix=/usr --libdir=/usr/lib64 --build=${CROSS_HOST} --host=${CROSS_TARGET} \
 				--disable-static --with-curses
 	make SHLIB_LIBS="-lncursesw"
-	make SHLIB_LIBS="-lncursesw" DESTDIR=${SYSDIR}/sysroot install
+	make SHLIB_LIBS="-lncursesw" DESTDIR=${SYSDIR} install
 popd
 ```
 
@@ -887,7 +886,7 @@ pushd ${BUILDDIR}/m4-1.4.18
 	echo "#define _IO_IN_BACKUP 0x100" >> lib/stdio-impl.h
 	./configure --prefix=/usr --build=${CROSS_HOST} --host=${CROSS_TARGET}
 	make
-	make DESTDIR=${SYSDIR}/sysroot install
+	make DESTDIR=${SYSDIR} install
 popd
 ```
 
@@ -897,7 +896,7 @@ tar xvf ${DOWNLOADDIR}/bc-4.0.2.tar.xz -C ${BUILDDIR}
 pushd ${BUILDDIR}/bc-4.0.2
 	CC="${CROSS_TARGET}-gcc" HOSTCC="gcc" ./configure --prefix=/usr
 	make
-	make DESTDIR=${SYSDIR}/sysroot install
+	make DESTDIR=${SYSDIR} install
 popd
 ```
 
@@ -908,8 +907,8 @@ pushd ${BUILDDIR}/flex-2.6.4
 	./configure --prefix=/usr --libdir=/usr/lib64 --build=${CROSS_HOST} \
 	            --host=${CROSS_TARGET} --disable-static
 	make
-	make DESTDIR=${SYSDIR}/sysroot install
-	ln -sv flex ${SYSDIR}/sysroot/usr/bin/lex
+	make DESTDIR=${SYSDIR} install
+	ln -sv flex ${SYSDIR}/usr/bin/lex
 popd
 ```
 
@@ -920,8 +919,8 @@ pushd ${BUILDDIR}/attr-2.5.1
 	./configure --prefix=/usr --libdir=/usr/lib64 --build=${CROSS_HOST} \
 	            --host=${CROSS_TARGET} --disable-static --sysconfdir=/etc
 	make
-	make DESTDIR=${SYSDIR}/sysroot install
-	rm ${SYSDIR}/sysroot/usr/lib64/libattr.la
+	make DESTDIR=${SYSDIR} install
+	rm ${SYSDIR}/usr/lib64/libattr.la
 popd
 ```
 
@@ -934,8 +933,8 @@ pushd ${BUILDDIR}/acl-2.3.1
 	./configure --prefix=/usr --libdir=/usr/lib64 --build=${CROSS_HOST} \
 	            --host=${CROSS_TARGET} --disable-static
 	make
-	make DESTDIR=${SYSDIR}/sysroot install
-	rm ${SYSDIR}/sysroot/usr/lib64/libacl.la
+	make DESTDIR=${SYSDIR} install
+	rm ${SYSDIR}/usr/lib64/libacl.la
 popd
 ```
 
@@ -945,7 +944,7 @@ tar xvf ${DOWNLOADDIR}/libcap-2.49.tar.xz -C ${BUILDDIR}
 pushd ${BUILDDIR}/libcap-2.49
 	make CROSS_COMPILE="${CROSS_TARGET}-" BUILD_CC="gcc" GOLANG=no prefix=/usr lib=lib64
 	make CROSS_COMPILE="${CROSS_TARGET}-" BUILD_CC="gcc" GOLANG=no prefix=/usr lib=lib64 \
-		 DESTDIR=${SYSDIR}/sysroot install
+		 DESTDIR=${SYSDIR} install
 popd
 ```
 
@@ -969,8 +968,8 @@ pushd ${BUILDDIR}/shadow-4.8.1
 	./configure --sysconfdir=/etc --build=${CROSS_HOST} --host=${CROSS_TARGET} \
 				--with-group-name-max-length=32
 	make
-	make DESTDIR=${SYSDIR}/sysroot install
-	sed -i 's/yes/no/' ${SYSDIR}/sysroot/etc/default/useradd
+	make DESTDIR=${SYSDIR} install
+	sed -i 's/yes/no/' ${SYSDIR}/etc/default/useradd
 popd
 ```
 
@@ -987,7 +986,7 @@ pushd ${BUILDDIR}/sed-4.8
 	automake --add-missing
 	./configure --prefix=/usr --build=${CROSS_HOST} --host=${CROSS_TARGET}
 	make
-	make DESTDIR=${SYSDIR}/sysroot install
+	make DESTDIR=${SYSDIR} install
 popd
 ```
 
@@ -999,7 +998,7 @@ pushd ${BUILDDIR}/psmisc-23.4
 	sed -i.orig "/rpl_realloc/d" configure
 	./configure --prefix=/usr --build=${CROSS_HOST} --host=${CROSS_TARGET}
 	make
-	make DESTDIR=${SYSDIR}/sysroot install
+	make DESTDIR=${SYSDIR} install
 popd
 ```
 
@@ -1016,10 +1015,10 @@ pushd ${BUILDDIR}/gettext-0.21
 	done
 	./configure --prefix=/usr --libdir=/usr/lib64 --build=${CROSS_HOST} \
 	            --host=${CROSS_TARGET} --disable-static \
-	            --with-libncurses-prefix=${SYSDIR}/sysroot
+	            --with-libncurses-prefix=${SYSDIR}
 	make
 	sed -i "/hello-c++-kde/d" gettext-tools/examples/Makefile
-	make DESTDIR=${SYSDIR}/sysroot install
+	make DESTDIR=${SYSDIR} install
 popd
 ```
 
@@ -1033,7 +1032,7 @@ pushd ${BUILDDIR}/bison-3.7.6
 	automake --add-missing
 	./configure --prefix=/usr --build=${CROSS_HOST} --host=${CROSS_TARGET}
 	make
-	make DESTDIR=${SYSDIR}/sysroot install
+	make DESTDIR=${SYSDIR} install
 popd
 ```
 
@@ -1045,7 +1044,7 @@ pushd ${BUILDDIR}/grep-3.6
 	automake --add-missing
 	./configure --prefix=/usr --build=${CROSS_HOST} --host=${CROSS_TARGET}
 	make
-	make DESTDIR=${SYSDIR}/sysroot install
+	make DESTDIR=${SYSDIR} install
 popd
 ```
 
@@ -1077,7 +1076,7 @@ pushd ${BUILDDIR}/bash-5.1
 	            --host=${CROSS_TARGET} --without-bash-malloc \
 	            --with-installed-readline --cache-file=config.cache
 	make
-	make DESTDIR=${SYSDIR}/sysroot install
+	make DESTDIR=${SYSDIR} install
 popd
 ```
 
@@ -1089,7 +1088,7 @@ tar xvf ${DOWNLOADDIR}/libtool-2.4.6.tar.xz -C ${BUILDDIR}
 pushd ${BUILDDIR}/libtool-2.4.6
 	./configure --prefix=/usr --libdir=/usr/lib64 --build=${CROSS_HOST} --host=${CROSS_TARGET}
 	make
-	make DESTDIR=${SYSDIR}/sysroot install
+	make DESTDIR=${SYSDIR} install
 popd
 ```
 
@@ -1100,7 +1099,7 @@ pushd ${BUILDDIR}/gdbm-1.19
 	./configure --prefix=/usr --libdir=/usr/lib64 --build=${CROSS_HOST} \
 	            --host=${CROSS_TARGET} --disable-static --enable-libgdbm-compat
 	make
-	make DESTDIR=${SYSDIR}/sysroot install
+	make DESTDIR=${SYSDIR} install
 popd
 ```
 #### GPerf
@@ -1109,7 +1108,7 @@ tar xvf ${DOWNLOADDIR}/gperf-3.1.tar.gz -C ${BUILDDIR}
 pushd ${BUILDDIR}/gperf-3.1
 	./configure --prefix=/usr --build=${CROSS_HOST} --host=${CROSS_TARGET}
 	make
-	make DESTDIR=${SYSDIR}/sysroot install
+	make DESTDIR=${SYSDIR} install
 popd
 ```
 
@@ -1120,7 +1119,7 @@ pushd ${BUILDDIR}/expat-2.3.0
 	./configure --prefix=/usr --libdir=/usr/lib64 --build=${CROSS_HOST} --host=${CROSS_TARGET} \
 				--disable-static
 	make
-	make DESTDIR=${SYSDIR}/sysroot install
+	make DESTDIR=${SYSDIR} install
 popd
 ```
 
@@ -1130,7 +1129,7 @@ tar xvf ${DOWNLOADDIR}/autoconf-2.71.tar.xz -C ${BUILDDIR}
 pushd ${BUILDDIR}/autoconf-2.71
 	./configure --prefix=/usr --build=${CROSS_HOST} --host=${CROSS_TARGET}
 	make
-	make DESTDIR=${SYSDIR}/sysroot install
+	make DESTDIR=${SYSDIR} install
 popd
 ```
 #### Automake
@@ -1140,7 +1139,7 @@ pushd ${BUILDDIR}/automake-1.16.3
 	patch -Np1 -i ${DOWNLOADDIR}/automake-1.16.3-add-loongarch.patch
 	./configure --prefix=/usr --build=${CROSS_HOST} --host=${CROSS_TARGET}
 	make
-	make DESTDIR=${SYSDIR}/sysroot install
+	make DESTDIR=${SYSDIR} install
 popd
 ```
 
@@ -1158,12 +1157,12 @@ pushd ${BUILDDIR}/kmod-28
 	            --sysconfdir=/etc --build=${CROSS_HOST} --host=${CROSS_TARGET} \
 	            --with-xz --with-zstd --with-zlib
 	make
-	make DESTDIR=${SYSDIR}/sysroot install
+	make DESTDIR=${SYSDIR} install
 	
 	for target in depmod insmod lsmod modinfo modprobe rmmod; do
-		ln -sfv ../bin/kmod ${SYSDIR}/sysroot/sbin/$target
+		ln -sfv ../bin/kmod ${SYSDIR}/sbin/$target
 	done
-	ln -sfv kmod ${SYSDIR}/sysroot/bin/lsmod
+	ln -sfv kmod ${SYSDIR}/bin/lsmod
 popd
 ```
 
@@ -1176,8 +1175,8 @@ pushd ${BUILDDIR}/elfutils-0.183
 				--host=${CROSS_TARGET} --disable-libdebuginfod --disable-debuginfod \
 				 ac_cv_search_lzma_auto_decoder=-llzma ac_cv_search_ZSTD_decompress=-lzstd
 	make
-	make -C libelf DESTDIR=${SYSDIR}/sysroot install
-	make -C libelf DESTDIR=${SYSDIR}/sysroot install-data
+	make -C libelf DESTDIR=${SYSDIR} install
+	make -C libelf DESTDIR=${SYSDIR} install-data
 popd
 ```
 
@@ -1193,7 +1192,7 @@ pushd ${BUILDDIR}/libffi-3.3
 	./configure --prefix=/usr --libdir=/usr/lib64 --build=${CROSS_HOST} \
 	            --host=${CROSS_TARGET} --disable-static --with-gcc-arch=native
 	make
-	make DESTDIR=${SYSDIR}/sysroot install
+	make DESTDIR=${SYSDIR} install
 popd
 ```
 
@@ -1208,7 +1207,7 @@ pushd ${BUILDDIR}/openssl-1.1.1k
 				--libdir=lib64 shared zlib linux-generic64
 	make
 	sed -i '/INSTALL_LIBS/s/libcrypto.a libssl.a//' Makefile
-	make DESTDIR=${SYSDIR}/sysroot install
+	make DESTDIR=${SYSDIR} install
 popd
 ```
 
@@ -1225,8 +1224,8 @@ pushd ${BUILDDIR}/coreutils-8.32
 	./configure --prefix=/usr  --build=${CROSS_HOST} --host=${CROSS_TARGET} \
 				--enable-no-install-program=kill,uptime
 	make
-	make DESTDIR=${SYSDIR}/sysroot install
-	mv -v ${SYSDIR}/sysroot/usr/bin/chroot ${SYSDIR}/sysroot/usr/sbin
+	make DESTDIR=${SYSDIR} install
+	mv -v ${SYSDIR}/usr/bin/chroot ${SYSDIR}/usr/sbin
 popd
 ```
 
@@ -1238,7 +1237,7 @@ pushd ${BUILDDIR}/diffutils-3.7
 	automake --add-missing
 	./configure --prefix=/usr  --build=${CROSS_HOST} --host=${CROSS_TARGET}
 	make
-	make DESTDIR=${SYSDIR}/sysroot install
+	make DESTDIR=${SYSDIR} install
 popd
 ```
 
@@ -1256,7 +1255,7 @@ pushd ${BUILDDIR}/gawk-5.1.0
 	done
 	./configure --prefix=/usr  --libdir=/usr/lib64 --build=${CROSS_HOST} --host=${CROSS_TARGET}
 	make
-	make DESTDIR=${SYSDIR}/sysroot install
+	make DESTDIR=${SYSDIR} install
 popd
 ```
 
@@ -1267,7 +1266,7 @@ pushd ${BUILDDIR}/findutils-4.8.0
 	./configure --prefix=/usr --libdir=/usr/lib64 --build=${CROSS_HOST} \
 	            --host=${CROSS_TARGET} --localstatedir=/var/lib/locate
 	make
-	make DESTDIR=${SYSDIR}/sysroot install
+	make DESTDIR=${SYSDIR} install
 popd
 ```
 
@@ -1279,7 +1278,7 @@ pushd ${BUILDDIR}/groff-1.22.4
 	automake --add-missing
 	PAGE=A4 ./configure --prefix=/usr --build=${CROSS_HOST} --host=${CROSS_TARGET}
 	make TROFFBIN=troff GROFFBIN=groff GROFF_BIN_PATH=
-	make DESTDIR=${SYSDIR}/sysroot install
+	make DESTDIR=${SYSDIR} install
 popd
 ```
 
@@ -1289,7 +1288,7 @@ tar xvf ${DOWNLOADDIR}/less-581.2.tar.gz -C ${BUILDDIR}
 pushd ${BUILDDIR}/less-581.2
 	./configure --prefix=/usr --sysconfdir=/etc --build=${CROSS_HOST} --host=${CROSS_TARGET}
 	make
-	make DESTDIR=${SYSDIR}/sysroot install
+	make DESTDIR=${SYSDIR} install
 popd
 ```
 
@@ -1301,7 +1300,7 @@ pushd ${BUILDDIR}/gzip-1.10
 	automake --add-missing
 	./configure --prefix=/usr --build=${CROSS_HOST} --host=${CROSS_TARGET}
 	make
-	make DESTDIR=${SYSDIR}/sysroot install
+	make DESTDIR=${SYSDIR} install
 popd
 ```
 
@@ -1312,9 +1311,9 @@ pushd ${BUILDDIR}/iproute2-5.12.0
 	sed -i /ARPD/d Makefile
 	rm -fv man/man8/arpd.8
 	sed -i 's/.m_ipt.o//' tc/Makefile
-	make CC="${CROSS_TARGET}-gcc" HOSTCC="gcc" KERNEL_INCLUDE=${SYSDIR}/sysroot/usr/include
-	make CC="${CROSS_TARGET}-gcc" HOSTCC="gcc" KERNEL_INCLUDE=${SYSDIR}/sysroot/usr/include \
-			DESTDIR=${SYSDIR}/sysroot install
+	make CC="${CROSS_TARGET}-gcc" HOSTCC="gcc" KERNEL_INCLUDE=${SYSDIR}/usr/include
+	make CC="${CROSS_TARGET}-gcc" HOSTCC="gcc" KERNEL_INCLUDE=${SYSDIR}/usr/include \
+			DESTDIR=${SYSDIR} install
 popd
 ```
 
@@ -1332,7 +1331,7 @@ pushd ${BUILDDIR}/kbd-2.4.0
 	LIBS="-lrt -lpthread" \
 	./configure --prefix=/usr --build=${CROSS_HOST} --host=${CROSS_TARGET} --disable-vlock
 	make
-	make DESTDIR=${SYSDIR}/sysroot install
+	make DESTDIR=${SYSDIR} install
 popd
 ```
 
@@ -1346,7 +1345,7 @@ pushd ${BUILDDIR}/libpipeline-1.5.3
 	automake --add-missing
 	./configure --prefix=/usr --libdir=/usr/lib64 --build=${CROSS_HOST} --host=${CROSS_TARGET}
 	make
-	make DESTDIR=${SYSDIR}/sysroot install
+	make DESTDIR=${SYSDIR} install
 popd
 ```
 
@@ -1358,7 +1357,7 @@ pushd ${BUILDDIR}/make-4.3
 	automake --add-missing
 	./configure --prefix=/usr --libdir=/usr/lib64 --build=${CROSS_HOST} --host=${CROSS_TARGET}
 	make
-	make DESTDIR=${SYSDIR}/sysroot install
+	make DESTDIR=${SYSDIR} install
 popd
 ```
 
@@ -1368,7 +1367,7 @@ tar xvf ${DOWNLOADDIR}/patch-2.7.6.tar.xz -C ${BUILDDIR}
 pushd ${BUILDDIR}/patch-2.7.6
 	./configure --prefix=/usr -build=${CROSS_HOST} --host=${CROSS_TARGET}
 	make
-	make DESTDIR=${SYSDIR}/sysroot install
+	make DESTDIR=${SYSDIR} install
 popd
 ```
 
@@ -1384,7 +1383,7 @@ pushd ${BUILDDIR}/man-db-2.9.4
 	            --enable-cache-owner=bin 	--with-browser=/usr/bin/lynx \
 	            --with-vgrind=/usr/bin/vgrind --with-grap=/usr/bin/grap
 	make
-	make DESTDIR=${SYSDIR}/sysroot install
+	make DESTDIR=${SYSDIR} install
 popd
 ```
 
@@ -1394,7 +1393,7 @@ tar xvf ${DOWNLOADDIR}/tar-1.34.tar.xz -C ${BUILDDIR}
 pushd ${BUILDDIR}/tar-1.34
 	FORCE_UNSAFE_CONFIGURE=1 ./configure --prefix=/usr --build=${CROSS_HOST} --host=${CROSS_TARGET}
 	make
-	make DESTDIR=${SYSDIR}/sysroot install
+	make DESTDIR=${SYSDIR} install
 popd
 ```
 #### Texinfo
@@ -1410,8 +1409,8 @@ pushd ${BUILDDIR}/texinfo-6.7
 	done
 	./configure --prefix=/usr --build=${CROSS_HOST} --host=${CROSS_TARGET}
 	make
-	make DESTDIR=${SYSDIR}/sysroot install
-	make DESTDIR=${SYSDIR}/sysroot TEXMF=/usr/share/texmf install-tex
+	make DESTDIR=${SYSDIR} install
+	make DESTDIR=${SYSDIR} TEXMF=/usr/share/texmf install-tex
 popd
 ```
 
@@ -1430,8 +1429,8 @@ pushd ${BUILDDIR}/vim-8.2.2879
 	EOF
 	./configure --prefix=/usr --build=${CROSS_HOST} --host=${CROSS_TARGET}  --with-tlib=ncurses
 	make
-	make DESTDIR=${SYSDIR}/sysroot STRIP=${CROSS_TARGET}-strip install
-	ln -sv vim ${SYSDIR}/sysroot/usr/bin/vi
+	make DESTDIR=${SYSDIR} STRIP=${CROSS_TARGET}-strip install
+	ln -sv vim ${SYSDIR}/usr/bin/vi
 popd
 ```
 
@@ -1440,7 +1439,7 @@ popd
 　　在安装完VIM后，我们可以配置VIM的默认设置文件，设置步骤如下：
 
 ```
-cat > ${SYSDIR}/sysroot/etc/vimrc << "EOF"
+cat > ${SYSDIR}/etc/vimrc << "EOF"
 let skip_defaults_vim=1 
 set nocompatible
 set backspace=2
@@ -1457,7 +1456,7 @@ EOF
 ```
 tar xvf ${DOWNLOADDIR}/util-linux-2.36.2.tar.xz -C ${BUILDDIR}
 pushd ${BUILDDIR}/util-linux-2.36.2
-	cp ${SYSDIR}/sysroot/usr/share/automake-1.16/config.* config/
+	cp ${SYSDIR}/usr/share/automake-1.16/config.* config/
 	LDFLAGS="-lpthread" \
 	./configure  --build=${CROSS_HOST} --host=${CROSS_TARGET} \
         ADJTIME_PATH=/var/lib/hwclock/adjtime \
@@ -1468,7 +1467,7 @@ pushd ${BUILDDIR}/util-linux-2.36.2
         --without-systemd --disable-makeinstall-chown \
         runstatedir=/run
 	make
-	make DESTDIR=${SYSDIR}/sysroot install
+	make DESTDIR=${SYSDIR} install
 popd
 ```
 
@@ -1505,9 +1504,9 @@ echo "']" >> meson-cross.txt
 echo -n "cpp_args = ['" >> meson-cross.txt
 echo -n "${BUILD_ARCH} ${BUILD_MABI}" | sed "s@ ?*@','@g" >> meson-cross.txt
 echo "']" >> meson-cross.txt
-echo "c_link_args = ['-Wl,-rpath-link,/opt/mylaos/sysroot/usr/lib64']" >> meson-cross.txt
-echo "cpp_link_args = ['-Wl,-rpath-link,/opt/mylaos/sysroot/usr/lib64']" >> meson-cross.txt
-echo "sys_root = '${SYSDIR}/sysroot'" >> meson-cross.txt
+echo "c_link_args = ['-Wl,-rpath-link,/opt/mylaos/usr/lib64']" >> meson-cross.txt
+echo "cpp_link_args = ['-Wl,-rpath-link,/opt/mylaos/usr/lib64']" >> meson-cross.txt
+echo "sys_root = '${SYSDIR}'" >> meson-cross.txt
 cat >> meson-cross.txt << "EOF"
 [host_machine]
 system = 'linux'
@@ -1531,7 +1530,7 @@ EOF
 		      --cross-file ../meson-cross.txt \
 		      ..
 		ninja
-		DESTDIR=${SYSDIR}/sysroot ninja install
+		DESTDIR=${SYSDIR} ninja install
 	popd
 popd
 ```
@@ -1552,8 +1551,8 @@ pushd ${BUILDDIR}/dbus-1.12.20
 	            --with-system-pid-file=/run/dbus/pid \
 	            --with-system-socket=/run/dbus/system_bus_socket
 	make
-	make DESTDIR=${SYSDIR}/sysroot install
-	ln -sfv /etc/machine-id ${SYSDIR}/sysroot/var/lib/dbus
+	make DESTDIR=${SYSDIR} install
+	ln -sfv /etc/machine-id ${SYSDIR}/var/lib/dbus
 popd
 ```
 
@@ -1566,7 +1565,7 @@ pushd ${BUILDDIR}/procps-3.3.17
 	            --with-systemd NCURSES_LIBS="-lncursesw" \
 	            ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes
 	make 
-	make DESTDIR=${SYSDIR}/sysroot install
+	make DESTDIR=${SYSDIR} install
 popd
 ```
 
@@ -1576,17 +1575,17 @@ popd
 ```
 tar xvf ${DOWNLOADDIR}/e2fsprogs-1.46.2.tar.gz -C ${BUILDDIR}
 pushd ${BUILDDIR}/e2fsprogs-1.46.2
-	cp ${SYSDIR}/sysroot/usr/share/automake-1.16/config.* config/
+	cp ${SYSDIR}/usr/share/automake-1.16/config.* config/
 	mkdir -v build
 	pushd build
-		LDFLAGS="-Wl,-rpath-link,/opt/mylaos/sysroot/usr/lib64" \
+		LDFLAGS="-Wl,-rpath-link,/opt/mylaos/usr/lib64" \
 		../configure --prefix=/usr --libdir=/usr/lib64 --build=${CROSS_HOST} \
 		             --host=${CROSS_TARGET} --sysconfdir=/etc \
 		             --enable-elf-shlibs--disable-libblkid \
 		             --disable-libuuid --disable-uuidd --disable-fsck
 		make 
-		make DESTDIR=${SYSDIR}/sysroot install
-		rm -fv ${SYSDIR}/sysroot/usr/lib64/{libcom_err,libe2p,libext2fs,libss}.a
+		make DESTDIR=${SYSDIR} install
+		rm -fv ${SYSDIR}/usr/lib64/{libcom_err,libe2p,libext2fs,libss}.a
 	popd
 popd
 ```
@@ -1600,9 +1599,9 @@ pushd ${BUILDDIR}/linux-5.13.0
 	make ARCH=loongarch CROSS_COMPILE=${CROSS_TARGET}- menuconfig
 	make ARCH=loongarch CROSS_COMPILE=${CROSS_TARGET}-
 	make ARCH=loongarch CROSS_COMPILE=${CROSS_TARGET}- INSTALL_MOD_PATH=dest modules_install
-	mkdir -pv ${SYSDIR}/sysroot/lib/modules/
-	cp -a dest/lib/modules/* ${SYSDIR}/sysroot/lib/modules/
-	cp -a vmlinux ${SYSDIR}/sysroot/boot/vmlinux
+	mkdir -pv ${SYSDIR}/lib/modules/
+	cp -a dest/lib/modules/* ${SYSDIR}/lib/modules/
+	cp -a vmlinux ${SYSDIR}/boot/vmlinux
 popd
 ```
 
@@ -1620,7 +1619,7 @@ popd
 ```
 tar xvf ${DOWNLOADDIR}/linux-firmware-20210511.tar.xz -C ${BUILDDIR}
 pushd ${BUILDDIR}/linux-firmware-20210511
-	make DESTDIR=${SYSDIR}/sysroot install
+	make DESTDIR=${SYSDIR} install
 popd
 ```
 
@@ -1636,7 +1635,7 @@ pushd ${BUILDDIR}/grub-2.06
 		             --host=${CROSS_TARGET} -with-platform=efi \
 		             --with-utils=host --disable-werror
 		make 
-		make DESTDIR=${SYSDIR}/sysroot install
+		make DESTDIR=${SYSDIR} install
 	popd
 popd
 ```
@@ -1652,7 +1651,7 @@ popd
 　　创建基本的用户名，这些用户名大多数在启动过程中会用到，步骤如下：
 
 ```
-cat > ${SYSDIR}/sysroot/etc/passwd << "EOF"
+cat > ${SYSDIR}/etc/passwd << "EOF"
 root::0:0:root:/root:/bin/bash
 bin:x:1:1:bin:/dev/null:/bin/false
 daemon:x:6:6:Daemon User:/dev/null:/bin/false
@@ -1676,7 +1675,7 @@ EOF
 　　创建基本用户组，大多数都是系统必须的，步骤如下：
 
 ```
-cat > ${SYSDIR}/sysroot/etc/group << "EOF"
+cat > ${SYSDIR}/etc/group << "EOF"
 root:x:0:
 bin:x:1:daemon
 sys:x:2:
@@ -1718,7 +1717,7 @@ EOF
 ### 创建输入配置文件
 
 ```
-cat > ${SYSDIR}/sysroot/etc/inputrc << "EOF"
+cat > ${SYSDIR}/etc/inputrc << "EOF"
 set horizontal-scroll-mode Off
 set meta-flag On
 set input-meta On
@@ -1743,7 +1742,7 @@ EOF
 
 ### 设置时间文件
 ```
-cat > ${SYSDIR}/sysroot/etc/adjtime << "EOF"
+cat > ${SYSDIR}/etc/adjtime << "EOF"
 0.0 0 0.0
 0
 LOCAL
@@ -1754,7 +1753,7 @@ EOF
 
 ### 创建系统信息文件
 ```
-cat > ${SYSDIR}/sysroot/etc/lsb-release << "EOF"
+cat > ${SYSDIR}/etc/lsb-release << "EOF"
 DISTRIB_ID="My GNU/Linux System for LoongArch64"
 DISTRIB_RELEASE="1.0"
 DISTRIB_CODENAME="Sun Haiyong"
@@ -1762,7 +1761,7 @@ DISTRIB_DESCRIPTION="My GNU/Linux System"
 EOF
 ```
 ```
-cat > ${SYSDIR}/sysroot/etc/os-release << "EOF"
+cat > ${SYSDIR}/etc/os-release << "EOF"
 NAME="My GNU/Linux System for LoongArch64"
 VERSION="1.0"
 ID=CLFS4LA64
@@ -1778,9 +1777,9 @@ EOF
 
 ```
 ${CROSS_TARGET}-grub-mkimage \
-          --directory "${SYSDIR}/sysroot/usr/lib64/grub/loongarch64-efi" \
+          --directory "${SYSDIR}/usr/lib64/grub/loongarch64-efi" \
           --prefix '(,gpt2)/boot/grub' \
-          --output "${SYSDIR}/sysroot/boot/efi/EFI/BOOT/BOOTLOONGARCH.EFI" \
+          --output "${SYSDIR}/boot/efi/EFI/BOOT/BOOTLOONGARCH.EFI" \
           --format 'loongarch64-efi' \
           --compression 'auto' \
           'ext2' 'part_gpt'
@@ -1800,10 +1799,10 @@ ${CROSS_TARGET}-grub-mkimage \
 　　生成好EFI文件后，就可以按照生成EFI所设置的目录存放Grub的模块文件了，安装过程如下：
 
 ```
-ln -sfv . ${SYSDIR}/sysroot/boot/boot
-mkdir ${SYSDIR}/sysroot/boot/{grub,efi}
-mkdir -pv ${SYSDIR}/sysroot/boot/efi/EFI/BOOT
-cp -a ${SYSDIR}/sysroot/usr/lib64/grub/loongarch64-efi ${SYSDIR}/sysroot/boot/grub
+ln -sfv . ${SYSDIR}/boot/boot
+mkdir ${SYSDIR}/boot/{grub,efi}
+mkdir -pv ${SYSDIR}/boot/efi/EFI/BOOT
+cp -a ${SYSDIR}/usr/lib64/grub/loongarch64-efi ${SYSDIR}/boot/grub
 ```
 
 ## 6 处理目标系统
@@ -1814,7 +1813,7 @@ cp -a ${SYSDIR}/sysroot/usr/lib64/grub/loongarch64-efi ${SYSDIR}/sysroot/boot/gr
 　　清理符号信息可以使用strip命令，但strip必须能够处理目标平台二进制，所以我们可以使用交叉编译工具链中的strip命令来操作，操作步骤如下：
 
 ```
-pushd ${SYSDIR}/sysroot
+pushd ${SYSDIR}/
 	find usr/lib{,64} -type f -name \*.a -exec ${CROSS_TARGET}-strip --strip-debug {} ';'
 	find usr/lib{,64} -type f -name \*.so* -exec ${CROSS_TARGET}-strip --strip-unneeded {} ';'
 	find usr/{bin,sbin,libexec} -type f -exec ${CROSS_TARGET}-strip --strip-all {} ';'
@@ -1836,7 +1835,7 @@ exit
 　　接着可以使用root权限对目标系统进行打包，打包步骤如下：
 
 ```
-pushd ${SYSDIR}/sysroot
+pushd ${SYSDIR}/
 	sudo tar --xattrs-include='*' --owner=root --group=root -cjpf \
 			${SYSDIR}/loongarch64-clfs-system-1.0.tar.bz2 *
 popd
