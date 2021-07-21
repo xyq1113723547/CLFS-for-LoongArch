@@ -79,7 +79,7 @@ mount -t tmpfs shm dev/shm
 　　使用如下命令创建几个目录，后续的制作过程都将在这些目录中进行。
 
 ```
-export SYSDIR=/opt/mylaos
+export SYSDIR=/mnt/clfs
 mkdir -pv ${SYSDIR}
 mkdir -pv ${SYSDIR}/downloads
 mkdir -pv ${SYSDIR}/build
@@ -138,7 +138,7 @@ EOF
 cat > ~/.bashrc << "EOF"
 set +h
 umask 022
-export SYSDIR="/opt/mylaos"
+export SYSDIR="/mnt/clfs"
 export BUILDDIR="${SYSDIR}/build"
 export DOWNLOADDIR="${SYSDIR}/downloads"
 export LC_ALL=POSIX
@@ -1504,8 +1504,8 @@ echo "']" >> meson-cross.txt
 echo -n "cpp_args = ['" >> meson-cross.txt
 echo -n "${BUILD_ARCH} ${BUILD_MABI}" | sed "s@ ?*@','@g" >> meson-cross.txt
 echo "']" >> meson-cross.txt
-echo "c_link_args = ['-Wl,-rpath-link,/opt/mylaos/usr/lib64']" >> meson-cross.txt
-echo "cpp_link_args = ['-Wl,-rpath-link,/opt/mylaos/usr/lib64']" >> meson-cross.txt
+echo "c_link_args = ['-Wl,-rpath-link,${SYSDIR}/usr/lib64']" >> meson-cross.txt
+echo "cpp_link_args = ['-Wl,-rpath-link,${SYSDIR}/usr/lib64']" >> meson-cross.txt
 echo "sys_root = '${SYSDIR}'" >> meson-cross.txt
 cat >> meson-cross.txt << "EOF"
 [host_machine]
@@ -1578,7 +1578,7 @@ pushd ${BUILDDIR}/e2fsprogs-1.46.2
 	cp ${SYSDIR}/usr/share/automake-1.16/config.* config/
 	mkdir -v build
 	pushd build
-		LDFLAGS="-Wl,-rpath-link,/opt/mylaos/usr/lib64" \
+		LDFLAGS="-Wl,-rpath-link,${SYSDIR}/usr/lib64" \
 		../configure --prefix=/usr --libdir=/usr/lib64 --build=${CROSS_HOST} \
 		             --host=${CROSS_TARGET} --sysconfdir=/etc \
 		             --enable-elf-shlibs--disable-libblkid \
