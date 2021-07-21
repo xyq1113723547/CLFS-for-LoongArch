@@ -138,17 +138,24 @@ EOF
 cat > ~/.bashrc << "EOF"
 set +h
 umask 022
+CLFS=/mnt/clfs
 export SYSDIR="/mnt/clfs"
-export BUILDDIR="${SYSDIR}/build"
-export DOWNLOADDIR="${SYSDIR}/downloads"
-export LC_ALL=POSIX
-export CROSS_HOST="$(echo $MACHTYPE | sed "s/$(echo $MACHTYPE | cut -d- -f2)/cross/")"
-export CROSS_TARGET="loongarch64-unknown-linux-gnu"
+export DOWNLOADDIR="${SYSDIR}/sources"
+export BUILDDIR=${SYSDIR}
+LC_ALL=POSIX
+PATH=${CLFS}/cross-tools/bin:/bin:/usr/bin
+export CLFS LC_ALL PATH
+unset CFLAGS CXXFLAGS PKG_CONFIG_PATH
+export CLFS_HOST="x86_64-cross-linux-gnu"
+export CLFS_TARGET="loongarch64-unknown-linux-gnu"
+export BUILD64="-mabi=lp64"
+export MAKEFLAGS='-j8'
+export CROSS_HOST=${CLFS_HOST}
+export CROSS_TARGET=${CLFS_TARGET}
 export MABI="lp64"
-export BUILD_ARCH="-march=loongarch"
+export BUILD_ARCH="-march=loongarch64"
 export BUILD_MABI="-mabi=${MABI}"
 export BUILD64="-mabi=lp64"
-export PATH=${SYSDIR}/cross-tools/bin:/bin:/usr/bin
 unset CFLAGS
 unset CXXFLAGS
 EOF
