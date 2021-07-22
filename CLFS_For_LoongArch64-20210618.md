@@ -697,7 +697,7 @@ pushd ${BUILDDIR}/gmp-6.2.1
 	rm config.guess config.sub
 	automake --add-missing
 	./configure --build=${CROSS_HOST} --host=${CROSS_TARGET} \
-                --prefix=/usr --libdir=/usr/lib64 --enable-cxx
+                --prefix=/usr --libdir=/usr/lib64 --enable-cxx --disable-assembly
 	make 
 	make DESTDIR=${SYSDIR} install
 	rm -v ${SYSDIR}/usr/lib64/lib{gmp,gmpxx}.la
