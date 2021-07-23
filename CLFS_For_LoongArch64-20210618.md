@@ -81,7 +81,7 @@ mount -t tmpfs shm dev/shm
 ```
 export SYSDIR=/mnt/clfs
 mkdir -pv ${SYSDIR}
-mkdir -pv ${SYSDIR}/downloads
+mkdir -pv ${SYSDIR}/sources
 mkdir -pv ${SYSDIR}/build
 install -dv ${SYSDIR}/cross-tools
 ```
@@ -90,7 +90,7 @@ install -dv ${SYSDIR}/cross-tools
 
 * 通过设置“SYSDIR"变量方便对“基础目录”的使用，该变量设置了一个具体的目录作为“基础目录”，与本次制作相关的工作都在该目录中进行。
 
-* “downloads”目录用来存放各种软件的源码包以及补丁文件；
+* “sources”目录用来存放各种软件的源码包以及补丁文件；
 
 * “build”目录用来编译各个软件包；
 
@@ -102,14 +102,14 @@ install -dv ${SYSDIR}/cross-tools
 　　为了防止制作过程中意外的对系统本身造成破坏，创建一个普通用户的账号，后续的制作过程除非需要特殊权限操作，否则对于目标系统的一切操作都使用该用户进行。
 
 ```
-groupadd lauser
-useradd -s /bin/bash -g lauser -m -k /dev/null lauser
+groupadd clfs
+useradd -s /bin/bash -g clfs -m -k /dev/null clfs
 ```
 　　设置目录为新创建用户所属：
 
 ```
-chown -Rv lauser ${SYSDIR}
-chmod -v a+wt ${SYSDIR}/{cross-tools,downloads,build}
+chown -Rv clfs ${SYSDIR}
+chmod -v a+wt ${SYSDIR}/{cross-tools,sources,build}
 ```
 
 
@@ -118,7 +118,7 @@ chmod -v a+wt ${SYSDIR}/{cross-tools,downloads,build}
 　　使用命令切换到新创建的用户：  
 
 ```
-su - lauser
+su - clfs
 ```
 
 　　使用“su”命令进行切换时加上“-”参数可以防止切换前的用户环境变量带到新用户环境中。
@@ -154,7 +154,6 @@ export CROSS_TARGET=${CLFS_TARGET}
 export MABI="lp64"
 export BUILD_ARCH="-march=loongarch64"
 export BUILD_MABI="-mabi=${MABI}"
-export BUILD64="-mabi=lp64"
 unset CFLAGS
 unset CXXFLAGS
 EOF
@@ -210,10 +209,10 @@ popd
 ### 2.3 下载软件包
 
 
-　　为了使用最新的软件包构建目标系统，这可能需要从网络中下载软件包源代码及补丁文件，下载的文件建议存放在“downloads”目录中。
+　　为了使用最新的软件包构建目标系统，这可能需要从网络中下载软件包源代码及补丁文件，下载的文件建议存放在“sources”目录中。
 
 ```
-pushd ${SYSDIR}/downloads
+pushd ${SYSDIR}/sources
 ```
 
 　　然后可以使用wget工具下载相应版本的软件包，例如下载coreutils-8.32这个软件包，可使用命令：
@@ -222,7 +221,7 @@ pushd ${SYSDIR}/downloads
 	wget https://ftp.gnu.org/gnu/coreutils/coreutils-8.32.tar.xz
 ```
 
-　　下载后软件包存放在“downloads”目录中。
+　　下载后软件包存放在“sources”目录中。
 
 　　以下是本次制作所用到的软件包源码的地址：
 
@@ -300,7 +299,7 @@ pushd ${SYSDIR}/downloads
 　　https://github.com/sunhaiyong1978/CLFS-for-LoongArch/blob/main/patches/libffi-3.3-add-loongarch.patch  
 　　https://github.com/sunhaiyong1978/CLFS-for-LoongArch/blob/main/patches/systemd-248-add-loongarch64.patch  
 
-　　都下载完成后，离开"downloads"目录:
+　　都下载完成后，离开"sources"目录:
 
 ```
 popd
@@ -890,7 +889,7 @@ tar xvf ${DOWNLOADDIR}/m4-1.4.18.tar.xz -C ${BUILDDIR}
 pushd ${BUILDDIR}/m4-1.4.18
 	sed -i 's/IO_ftrylockfile/IO_EOF_SEEN/' lib/*.c
 	echo "#define _IO_IN_BACKUP 0x100" >> lib/stdio-impl.h
-	./configure --prefix=/usr --build=${CROSS_HOST} --host=${CROSS_TARGET}
+	./configure --prefix=/usr --build=${CROSS_HOST} --host=$(build-aux/config.guess)
 	make
 	make DESTDIR=${SYSDIR} install
 popd
@@ -1061,24 +1060,24 @@ pushd ${BUILDDIR}/bash-5.1
 	rm $(dirname $(find -name "config.sub"))/config.{sub,guess}
 	automake --add-missing
 	
-	cat > config.cache << "EOF"
-	ac_cv_func_mmap_fixed_mapped=yes
-	ac_cv_func_strcoll_works=yes
-	ac_cv_func_working_mktime=yes
-	bash_cv_func_sigsetjmp=present
-	bash_cv_getcwd_malloc=yes
-	bash_cv_job_control_missing=present
-	bash_cv_printf_a_format=yes
-	bash_cv_sys_named_pipes=present
-	bash_cv_ulimit_maxfds=yes
-	bash_cv_under_sys_siglist=yes
-	bash_cv_unusable_rtsigs=no
-	gt_cv_int_divbyzero_sigfpe=yes
-	EOF
+cat > config.cache << "EOF"
+ac_cv_func_mmap_fixed_mapped=yes
+ac_cv_func_strcoll_works=yes
+ac_cv_func_working_mktime=yes
+bash_cv_func_sigsetjmp=present
+bash_cv_getcwd_malloc=yes
+bash_cv_job_control_missing=present
+bash_cv_printf_a_format=yes
+bash_cv_sys_named_pipes=present
+bash_cv_ulimit_maxfds=yes
+bash_cv_under_sys_siglist=yes
+bash_cv_unusable_rtsigs=no
+gt_cv_int_divbyzero_sigfpe=yes
+EOF
 	
 	sed -i  '/^bashline.o:.*shmbchar.h/a bashline.o: ${DEFDIR}/builtext.h' Makefile.in
 	
-	./configure --prefix=/usr --libdir=/usr/lib64 --build=${CROSS_HOST} \
+	./configure --prefix=/usr --build=$(support/config.guess) \
 	            --host=${CROSS_TARGET} --without-bash-malloc \
 	            --with-installed-readline --cache-file=config.cache
 	make
