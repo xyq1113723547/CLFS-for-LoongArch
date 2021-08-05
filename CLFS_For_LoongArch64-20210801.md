@@ -228,7 +228,7 @@ pushd ${SYSDIR}/downloads
 　　**Automake:** https://ftp.gnu.org/gnu/automake/automake-1.16.3.tar.xz  
 　　**Bash:** https://ftp.gnu.org/gnu/bash/bash-5.1.8.tar.gz  
 　　**BC:** https://github.com/gavinhoward/bc/releases/download/4.0.2/bc-4.0.2.tar.xz  
-　　**Binutils:** ```https://github.com/loongarch/binutils-gdb.git  分支名“loongarch-2_37”```  
+　　**Binutils:** https://github.com/loongson/binutils-gdb/tree/loongarch-2_37  
 　　**Bison:** https://ftp.gnu.org/gnu/bison/bison-3.7.6.tar.xz  
 　　**Bzip2:** https://www.sourceware.org/pub/bzip2/bzip2-1.0.8.tar.gz  
 　　**Coreutils:** https://ftp.gnu.org/gnu/coreutils/coreutils-8.32.tar.xz  
@@ -240,15 +240,15 @@ pushd ${SYSDIR}/downloads
 　　**Findutils:** https://ftp.gnu.org/gnu/findutils/findutils-4.8.0.tar.xz  
 　　**Flex:** https://github.com/westes/flex/releases/download/v2.6.4/flex-2.6.4.tar.gz  
 　　**Gawk:** https://ftp.gnu.org/gnu/gawk/gawk-5.1.0.tar.xz  
-　　**GCC:** ```https://github.com/loongarch/gcc.git  分支名“loongarch-12”```  
+　　**GCC:** https://github.com/loongson/gcc/tree/loongarch-12  
 　　**GDBM:** https://ftp.gnu.org/gnu/gdbm/gdbm-1.19.tar.gz  
 　　**Gettext:** https://ftp.gnu.org/gnu/gettext/gettext-0.21.tar.xz  
-　　**Glibc:** ```https://github.com/loongarch/glibc.git  分支名“loongarch_2_33”```  
+　　**Glibc:** https://github.com/loongson/glibc/tree/loongarch_2_33  
 　　**GMP:** https://ftp.gnu.org/gnu/gmp/gmp-6.2.1.tar.xz  
 　　**GPerf:** https://ftp.gnu.org/gnu/gperf/gperf-3.1.tar.gz  
 　　**Grep:** https://ftp.gnu.org/gnu/grep/grep-3.6.tar.xz  
 　　**Groff:** https://ftp.gnu.org/gnu/groff/groff-1.22.4.tar.gz  
-　　**Grub2:** ```https://github.com/loongarch64/grub  分支名“dev-la64”```  
+　　**Grub2:** https://github.com/loongarch64/grub/tree/dev-la64  
 　　**Gzip:** https://ftp.gnu.org/gnu/gzip/gzip-1.10.tar.xz  
 　　**Iana-Etc:** https://github.com/Mic92/iana-etc/releases/download/20210526/iana-etc-20210526.tar.gz  
 　　**IPRoute2:** https://www.kernel.org/pub/linux/utils/net/iproute2/iproute2-5.12.0.tar.xz  
@@ -260,7 +260,7 @@ pushd ${SYSDIR}/downloads
 　　**Libffi:** https://sourceware.org/pub/libffi/libffi-3.3.tar.gz  
 　　**Libpipeline:** https://download.savannah.gnu.org/releases/libpipeline/libpipeline-1.5.3.tar.gz  
 　　**Libtool:** https://ftp.gnu.org/gnu/libtool/libtool-2.4.6.tar.xz  
-　　**Linux:** ```https://github.com/loongson/linux.git 分支名“loongarch-next”```  
+　　**Linux:** https://github.com/loongson/linux/tree/loongarch-next  
 　　**Linux-Firmware:** https://mirrors.edge.kernel.org/pub/linux/kernel/firmware/linux-firmware-20210511.tar.xz  
 　　**M4:** https://ftp.gnu.org/gnu/m4/m4-1.4.18.tar.xz  
 　　**Make:** https://ftp.gnu.org/gnu/make/make-4.3.tar.gz  
