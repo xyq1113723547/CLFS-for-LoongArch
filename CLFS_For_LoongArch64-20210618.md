@@ -431,6 +431,7 @@ pushd ${BUILDDIR}/gcc-8.3.0
 		             --disable-decimal-float --disable-libgomp --disable-libitm \
 		             --disable-libsanitizer --disable-libquadmath --disable-threads \
 		             --disable-target-zlib \
+			     --disable-libada \
 		             --with-system-zlib --enable-checking=release \
 		             --with-abi=${MABI} --with-fix-loongson3-llsc --with-arch=loongarch \
 		             --enable-languages=c --enable-tls
@@ -498,7 +499,8 @@ pushd ${BUILDDIR}/gcc-8.3.0
 		             --enable-__cxa_atexit --enable-threads=posix --with-system-zlib \
 		             --enable-libstdcxx-time --enable-checking=release \
 		             --with-abi=${MABI} --with-arch=loongarch --enable-tls \
-		             --enable-languages=c,c++,fortran,objc,obj-c++,lto
+			     --disable-libada \
+		             --enable-languages=c,c++,objc,obj-c++,lto
 		make
 		make install
 	popd
