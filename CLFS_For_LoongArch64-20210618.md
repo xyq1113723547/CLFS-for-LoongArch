@@ -265,7 +265,7 @@ pushd ${SYSDIR}/sources
 　　**Libtool:** https://ftp.gnu.org/gnu/libtool/libtool-2.4.6.tar.xz  
 　　**Linux:** https://github.com/loongson/linux/tree/loongarch-next  
 　　**Linux-Firmware:** https://mirrors.edge.kernel.org/pub/linux/kernel/firmware/linux-firmware-20210511.tar.xz  
-　　**M4:** https://ftp.gnu.org/gnu/m4/m4-1.4.18.tar.xz  
+　　**M4:** https://ftp.gnu.org/gnu/m4/m4-1.4.19.tar.xz  
 　　**Make:** https://ftp.gnu.org/gnu/make/make-4.3.tar.gz  
 　　**Man-DB:** https://download.savannah.gnu.org/releases/man-db/man-db-2.9.4.tar.xz  
 　　**Man-Pages:** https://www.kernel.org/pub/linux/docs/man-pages/man-pages-5.11.tar.xz  
@@ -896,8 +896,8 @@ popd
 
 #### M4
 ```
-tar xvf ${DOWNLOADDIR}/m4-1.4.18.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/m4-1.4.18
+tar xvf ${DOWNLOADDIR}/m4-1.4.19.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/m4-1.4.19
 	sed -i 's/IO_ftrylockfile/IO_EOF_SEEN/' lib/*.c
 	echo "#define _IO_IN_BACKUP 0x100" >> lib/stdio-impl.h
 	./configure --prefix=/usr --build=${CROSS_HOST} --host=$(CROSS_TARGET)
