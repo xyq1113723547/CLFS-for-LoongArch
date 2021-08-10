@@ -519,7 +519,7 @@ popd
 在完成目标系统的Glibc之后就可以增加和修改一些编译参数了，主要是如下：  
 * 去掉了```--with-newlib```和```--disable-shared```，因为有Glibc，所以不再需要newlib了。  
 * ```--enable-threads=posix```,可以设置线程支持了。
-* ```--enable-languages=c,c++,fortran,objc,obj-c++,lto```，可以支持更多的开发语言了。
+* ```--enable-languages=c,c++,objc,obj-c++,lto```，可以支持更多的开发语言了。
 
 ### 3.9 File
 　　File软件包的官方最新版已经集成了LoongArch的支持，可以识别出LoongArch架构的二进制文件，因此制作时使用5.40以上的版本。
@@ -782,7 +782,7 @@ pushd ${BUILDDIR}/gcc-8.3.0
 		             --with-system-zlib --enable-libstdcxx-time \
 		             --enable-checking=release --enable-tls \
 		             --with-abi=lp64 --with-arch=loongarch \
-		             --enable-languages=c,c++,fortran,objc,obj-c++,lto
+		             --enable-languages=c,c++,objc,obj-c++,lto
 		make
 		make DESTDIR=${SYSDIR} install
 		ln -sv /usr/bin/cpp ${SYSDIR}/lib
@@ -791,7 +791,7 @@ pushd ${BUILDDIR}/gcc-8.3.0
 popd
 ```
 
-　　因在目标系统中使用，所以编译的完整一些，将C、C++以及Fortran等语言的支持加上。
+　　因在目标系统中使用，所以编译的完整一些，将C、C++ 等语言的支持加上。
 
 #### Bzip2
 ```
