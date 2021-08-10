@@ -438,6 +438,8 @@ pushd ${BUILDDIR}/gcc-8.3.0
 		make all-gcc all-target-libgcc
 		make install-gcc install-target-libgcc
 	popd
+	cat gcc/limitx.h gcc/glimits.h gcc/limity.h > \
+  	`dirname $($LFS_TGT-gcc -print-libgcc-file-name)`/install-tools/include/limits.h
 popd
 ```
 
