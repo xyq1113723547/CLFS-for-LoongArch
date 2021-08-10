@@ -482,6 +482,13 @@ popd
 		popd
 	popd
 ```
+
+* 完成 limits.h
+Now that our cross-toolchain is complete, finalize the installation of the limits.h header. For doing so, run a utility provided by the GCC developers: 
+```
+$LFS/cross-tools/libexec/gcc/$LFS_TGT/8.3.0/install-tools/mkheaders
+```
+
 　　Glibc是目标系统的一部分，因此指定prefix等路径参数时是按照常规系统的路径进行设置的，所以必须在安装时指定DESTDIR来指定安装到存放目标系统的目录中。
 
 ### 3.8 交叉编译器之GCC（完整版）
