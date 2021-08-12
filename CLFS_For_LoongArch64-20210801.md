@@ -967,8 +967,8 @@ popd
 
 #### Libcap
 ```sh
-tar xvf ${DOWNLOADDIR}/libcap-2.49.tar.xz -C ${BUILDDIR}
-pushd ${BUILDDIR}/libcap-2.49
+tar xvf ${DOWNLOADDIR}/libcap-2.50.tar.xz -C ${BUILDDIR}
+pushd ${BUILDDIR}/libcap-2.50
 	make CROSS_COMPILE="${CROSS_TARGET}-" BUILD_CC="gcc" GOLANG=no prefix=/usr lib=lib64
 	make CROSS_COMPILE="${CROSS_TARGET}-" BUILD_CC="gcc" GOLANG=no prefix=/usr lib=lib64 \
 		 DESTDIR=${SYSDIR}/ install
