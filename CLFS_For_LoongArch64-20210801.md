@@ -941,7 +941,7 @@ popd
 
 #### Attr
 ```sh
-tar xvf ${DOWNLOADDIR}/attr-2.5.1.tar.xz -C ${BUILDDIR}
+tar xvf ${DOWNLOADDIR}/attr-2.5.1.tar.gz -C ${BUILDDIR}
 pushd ${BUILDDIR}/attr-2.5.1
 	./configure --prefix=/usr --libdir=/usr/lib64 --build=${CROSS_HOST} \
 	            --host=${CROSS_TARGET} --disable-static --sysconfdir=/etc
